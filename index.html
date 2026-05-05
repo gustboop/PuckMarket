@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PuckMarket — Sveriges Hockeymarknadsplats</title>
+<meta name="description" content="Köp och sälj hockeyutrustning i Sverige. Begagnat, pro stock och överskott från föreningar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/*═══════════════════════════════════════════════════════════
+  CSS – PuckMarket Complete
+═══════════════════════════════════════════════════════════*/
+:root{
+  --ice:#EEF4FA;--ice2:#D0E4F5;--rink:#0A1628;--rink2:#112240;
+  --blue:#1A5FBF;--blue2:#2B7BE8;--red:#E8202A;--gold:#F5C842;
+  --green:#2E7D32;--orange:#E65100;--text:#0A1628;--muted:#5A6A82;
+  --light:#8896AB;--border:rgba(10,22,40,.08);--border2:rgba(10,22,40,.15);
+  --r:12px;--r2:16px;--r3:20px;--max:1200px;
+  --shadow:0 2px 8px rgba(10,22,40,.06);--shadow2:0 12px 32px rgba(10,22,40,.1)
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--ice);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── Utility ── */
+.container{max-width:var(--max);margin:0 auto;padding:0 20px}
+.hide{display:none!important}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.flex-between{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.text-center{text-align:center}
+
+/* ── Nav ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:box-shadow .3s}
+nav.scrolled{box-shadow:var(--shadow)}
+.n-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--rink);display:flex;align-items:center;gap:6px;text-decoration:none;flex-shrink:0}
+.n-puck{width:22px;height:11px;background:var(--rink);border-radius:50%}
+.n-links{display:flex;gap:2px;list-style:none;overflow-x:auto}
+.n-links a,.n-links button{font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all .2s;background:none;border:none;cursor:pointer;font-family:inherit;white-space:nowrap}
+.n-links a:hover,.n-links button:hover{color:var(--blue);background:var(--ice)}
+.n-right{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.n-user{font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;text-decoration:none;white-space:nowrap;line-height:1.3}
+.btn-dark{background:var(--rink);color:#fff}.btn-dark:hover{background:var(--blue)}
+.btn-outline{background:#fff;color:var(--rink);border:1.5px solid var(--border2)}.btn-outline:hover{border-color:var(--rink);background:var(--ice)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue2)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#c41820}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1b5e20}
+.btn-gold{background:var(--gold);color:var(--rink)}.btn-gold:hover{background:#e0b530}
+.btn-ghost{background:none;color:var(--muted);padding:6px 10px}.btn-ghost:hover{color:var(--blue);background:var(--ice)}
+.btn-lg{padding:12px 24px;font-size:14px;border-radius:var(--r)}
+.btn-sm{padding:5px 10px;font-size:10px}
+.btn-block{width:100%}
+
+/* ── Hero ── */
+.hero{min-height:100vh;padding:90px 20px 60px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:var(--max);margin:0 auto}
+.hero-tag{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:4px 12px;font-size:10px;font-weight:600;color:var(--blue);margin-bottom:16px}
+.hero-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,7vw,84px);line-height:.9;letter-spacing:1px;color:var(--rink);margin-bottom:20px}
+.hero h1 span{color:var(--blue)}
+.hero-desc{font-size:15px;line-height:1.7;color:var(--muted);max-width:400px;margin-bottom:28px}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.hero-stats{display:flex;gap:24px}
+.h-stat-n{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--rink);display:block}
+.h-stat-l{font-size:10px;color:var(--muted)}
+.hero-visual{display:flex;flex-direction:column;gap:10px;position:relative}
+.h-card{background:#fff;border-radius:14px;padding:12px;border:1px solid var(--border);display:flex;gap:10px;align-items:center;cursor:pointer;transition:all .2s;animation:slideR .5s ease both}
+.h-card:hover{transform:translateX(-3px);box-shadow:4px 4px 0 var(--rink)}
+.h-card:nth-child(2){animation-delay:.08s}.h-card:nth-child(3){animation-delay:.16s}.h-card:nth-child(4){animation-delay:.24s}.h-card:nth-child(5){animation-delay:.32s}
+@keyframes slideR{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.h-card-icon{width:42px;height:42px;border-radius:8px;background:var(--ice);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.h-card-info{flex:1;min-width:0}
+.h-card-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-card-meta{font-size:10px;color:var(--muted)}
+.h-card-badges{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
+.h-card-price{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--rink);flex-shrink:0}
+.float-b{position:absolute;background:var(--gold);color:var(--rink);font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:4px 10px;border-radius:14px;border:1.5px solid var(--rink);box-shadow:2px 2px 0 var(--rink);animation:floatY 3s ease-in-out infinite;z-index:2}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ── Rink Line ── */
+.rink-line{width:100%;height:4px;background:linear-gradient(90deg,var(--red) 0%,var(--red) 33%,#fff 33%,#fff 37%,var(--blue) 37%,var(--blue) 63%,#fff 63%,#fff 67%,var(--red) 67%)}
+
+/* ── Sections ── */
+.sec{padding:64px 20px;max-width:var(--max);margin:0 auto}
+.sec-full{padding:64px 20px}
+.s-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.s-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,48px);letter-spacing:1px;line-height:1;color:var(--rink);margin-bottom:12px}
+.s-desc{font-size:14px;line-height:1.7;color:var(--muted);max-width:600px;margin-bottom:28px}
+
+/* ── Search ── */
+.search-wrap{background:var(--blue);padding:40px 20px}
+.search-inner{max-width:700px;margin:0 auto;text-align:center}
+.search-inner h2{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;margin-bottom:14px}
+.search-bar{display:flex;background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.s-input{flex:1;padding:12px 16px;font-size:13px;border:none;outline:none;font-family:inherit}
+.s-select{padding:12px;border:none;border-left:1px solid var(--border);font-size:11px;font-family:inherit;color:var(--muted);background:#fff;cursor:pointer;outline:none}
+.s-btn{background:var(--rink);color:#fff;padding:12px 20px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}.s-btn:hover{background:var(--blue2)}
+
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;border-radius:10px;font-size:8px;font-weight:700;letter-spacing:.3px}
+.b-cond{background:var(--ice);color:var(--blue)}
+.b-pro{background:#FFF3E0;color:var(--orange)}
+.b-club{background:#E8F5E9;color:var(--green)}
+.b-new{background:var(--gold);color:var(--rink)}
+.b-qty{background:var(--rink);color:#fff}
+.b-verified{background:var(--green);color:#fff}
+
+/* ── Ad Cards ── */
+.ads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.ad-card{background:#fff;border-radius:var(--r2);overflow:hidden;border:1px solid var(--border);transition:all .2s;cursor:pointer;position:relative}
+.ad-card:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.adc-img{height:160px;background:var(--ice);display:flex;align-items:center;justify-content:center;font-size:44px;position:relative;overflow:hidden}
+.adc-img img{width:100%;height:100%;object-fit:cover}
+.adc-tags{position:absolute;top:6px;left:6px;display:flex;gap:3px;flex-wrap:wrap}
+.adc-qty{position:absolute;bottom:6px;right:6px}
+.adc-body{padding:10px 12px 12px}
+.adc-title{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adc-meta{font-size:10px;color:var(--muted);margin-bottom:8px}
+.adc-foot{display:flex;justify-content:space-between;align-items:center}
+.adc-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--rink)}
+.adc-seller{font-size:9px;color:var(--muted);display:flex;align-items:center;gap:3px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* ── Categories Grid ── */
+.cats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.cat-card{background:#fff;border-radius:var(--r2);padding:16px 10px;text-align:center;border:1px solid var(--border);cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
+.cat-card:hover,.cat-card.active{background:var(--rink);color:#fff;transform:translateY(-2px);box-shadow:var(--shadow2)}
+.cat-card:hover .cat-count,.cat-card.active .cat-count{color:rgba(255,255,255,.6)}
+.cat-icon{font-size:28px;margin-bottom:6px;display:block}
+.cat-name{font-size:11px;font-weight:600;margin-bottom:2px}
+.cat-count{font-size:9px;color:var(--muted);transition:color .2s}
+
+/* ── Clubs Grid ── */
+.clubs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.club-card{background:#fff;border-radius:var(--r2);padding:16px;border:1px solid var(--border);display:flex;gap:12px;align-items:center;cursor:pointer;transition:all .2s}
+.club-card:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.club-av{width:44px;height:44px;border-radius:10px;background:var(--rink);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;flex-shrink:0}
+.club-info{flex:1;min-width:0}
+.club-nm{font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px}
+.club-loc{font-size:10px;color:var(--muted)}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:6px 12px;border-radius:14px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);transition:all .2s}
+.tab:hover{border-color:var(--blue);color:var(--blue)}
+.tab.active{background:var(--rink);color:#fff;border-color:var(--rink)}
+
+/* ── How It Works ── */
+.how-wrap{background:var(--rink);padding:64px 20px;color:#fff}
+.how-inner{max-width:var(--max);margin:0 auto}
+.how-wrap .s-label{color:var(--gold)}.how-wrap .s-title{color:#fff}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;margin-top:32px}
+.step{position:relative}
+.step-n{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(255,255,255,.04);position:absolute;top:-10px;left:-4px}
+.step-i{font-size:24px;margin-bottom:8px}
+.step h3{font-size:14px;font-weight:600;margin-bottom:3px}
+.step p{font-size:11px;line-height:1.6;color:rgba(255,255,255,.5)}
+
+/* ── Trust ── */
+.trust-bar{background:#fff;padding:40px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:20px;text-align:center}
+.trust-i{font-size:22px;margin-bottom:6px}
+.trust-t{font-size:12px;font-weight:600;margin-bottom:2px}
+.trust-d{font-size:10px;color:var(--muted);line-height:1.4}
+
+/* ── Club Feature ── */
+.club-feat{background:linear-gradient(135deg,var(--rink),var(--rink2));padding:64px 20px;color:#fff}
+.cf-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.club-feat .s-label{color:var(--gold)}.club-feat .s-title{color:#fff}
+.club-feat p{color:rgba(255,255,255,.7);font-size:13px;line-height:1.7;margin-bottom:16px}
+.feat-list{list-style:none;margin-bottom:20px}
+.feat-list li{display:flex;gap:6px;align-items:center;color:rgba(255,255,255,.8);font-size:12px;padding:4px 0}
+.feat-cards{display:flex;flex-direction:column;gap:8px}
+.feat-card{background:rgba(255,255,255,.06);border-radius:var(--r);padding:14px;border:1px solid rgba(255,255,255,.06)}
+.feat-card h4{font-size:12px;font-weight:600;color:#fff;margin-bottom:2px}
+.feat-card p{font-size:10px;color:rgba(255,255,255,.4);margin:0;line-height:1.4}
+
+/* ── CTA ── */
+.cta-wrap{background:var(--red);padding:56px 20px;text-align:center}
+.cta-wrap .s-title{color:#fff;margin-bottom:8px}
+.cta-wrap p{color:rgba(255,255,255,.8);font-size:13px;margin-bottom:24px}
+.cta-wrap .btn{background:#fff;color:var(--red)}.cta-wrap .btn:hover{background:var(--rink);color:#fff}
+
+/* ── Footer ── */
+footer{background:var(--rink);padding:40px 20px 16px;color:rgba(255,255,255,.5)}
+.f-inner{max-width:var(--max);margin:0 auto}
+.f-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+.f-brand .n-logo{color:#fff;margin-bottom:8px}
+.f-desc{font-size:10px;line-height:1.7;max-width:220px}
+.f-col h4{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#fff;margin-bottom:8px}
+.f-col ul{list-style:none}.f-col a{font-size:11px;color:rgba(255,255,255,.4);text-decoration:none;display:block;padding:2px 0;transition:color .15s}.f-col a:hover{color:#fff}
+.f-bottom{padding-top:12px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;font-size:9px}
+
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,22,40,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:var(--r3);padding:24px;max-width:500px;width:92%;max-height:88vh;overflow-y:auto;animation:mIn .25s ease;position:relative}
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:none}}
+.m-title{font-family:'Bebas Neue',sans-serif;font-size:24px;margin-bottom:4px}
+.m-sub{font-size:11px;color:var(--muted);margin-bottom:16px}
+.m-close{position:absolute;top:12px;right:12px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px}.m-close:hover{background:var(--ice)}
+.fg{margin-bottom:10px}
+.fl{font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;display:block}
+.fi,.ft{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;color:var(--text);outline:none;transition:border-color .2s}
+.fi:focus,.ft:focus{border-color:var(--blue)}
+.ft{resize:vertical;min-height:56px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f-check{display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;margin:6px 0}
+.f-check input{width:14px;height:14px;cursor:pointer}
+.m-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px}
+.img-up{border:2px dashed var(--border);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;background:var(--ice);font-size:11px;color:var(--muted);transition:border-color .2s}
+.img-up:hover{border-color:var(--blue)}
+.img-up.has-img{padding:4px}
+.img-up img{max-width:100%;max-height:140px;border-radius:6px}
+.img-up input{display:none}
+
+/* ── Detail ── */
+.detail{background:#fff;border-radius:var(--r3);padding:20px;max-width:800px;margin:0 auto;border:1px solid var(--border)}
+.detail-img{width:100%;max-height:360px;object-fit:cover;border-radius:var(--r);margin-bottom:14px}
+.detail-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.detail-title{font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:4px}
+.detail-price{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--blue);margin-bottom:10px}
+.detail-meta{font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.detail-desc{font-size:13px;line-height:1.7;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.detail-item{font-size:11px}.detail-label{color:var(--muted);display:block;margin-bottom:1px}.detail-value{font-weight:600}
+.detail-actions{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Provision Box ── */
+.prov-box{background:var(--ice);border-radius:var(--r);padding:14px;margin:14px 0;font-size:12px}
+.prov-row{display:flex;justify-content:space-between;padding:3px 0}
+.prov-row.total{font-weight:700;border-top:1px solid var(--border);padding-top:6px;margin-top:4px}
+.prov-fee{color:var(--red)}
+.prov-net{color:var(--green)}
+
+/* ── Dashboard ── */
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+.d-stat{background:#fff;border-radius:var(--r);padding:14px;border:1px solid var(--border);text-align:center}
+.d-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--rink)}
+.d-label{font-size:10px;color:var(--muted)}
+
+/* ── My Items ── */
+.my-item{background:#fff;border-radius:var(--r);padding:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px}
+.my-info{flex:1;min-width:0}
+.my-title{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.my-meta{font-size:9px;color:var(--muted)}
+
+/* ── Info Pages ── */
+.info-page{padding:80px 20px 40px;max-width:760px;margin:0 auto}
+.info-page h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);margin-bottom:6px}
+.info-page .subtitle{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.info-page h2{font-family:'Bebas Neue',sans-serif;font-size:20px;margin-top:32px;margin-bottom:8px;padding-top:16px;border-top:1px solid var(--border)}
+.info-page h2:first-of-type{border-top:none;padding-top:0;margin-top:0}
+.info-page h3{font-size:14px;font-weight:600;margin-top:16px;margin-bottom:6px}
+.info-page p,.info-page li{font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:8px}
+.info-page ul{padding-left:16px;margin-bottom:12px}
+.info-card{background:#fff;border-radius:var(--r);padding:14px;border:1px solid var(--border);margin-bottom:10px}
+.info-card h4{font-size:13px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.info-card p{font-size:11px;color:var(--muted);margin:0;line-height:1.5}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.rating-row{display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border-radius:var(--r);border:1px solid var(--border);margin-bottom:6px}
+.rating-stars{font-size:16px;min-width:70px}
+.rating-desc{font-size:11px;color:var(--muted)}
+.swish-box{background:linear-gradient(135deg,#3BB537,#22A31D);border-radius:var(--r2);padding:20px;color:#fff;margin:14px 0}
+.swish-box h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.swish-box p{font-size:12px;line-height:1.6;opacity:.9;margin:0}
+
+/* ── Messages ── */
+.conv-list{display:flex;flex-direction:column;gap:6px}
+.conv-item{background:#fff;border-radius:var(--r);padding:12px;border:1px solid var(--border);cursor:pointer;display:flex;gap:10px;align-items:center;transition:all .15s}
+.conv-item:hover{border-color:var(--blue);background:var(--ice)}
+.conv-av{width:36px;height:36px;border-radius:50%;background:var(--rink);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0}
+.conv-info{flex:1;min-width:0}
+.conv-name{font-size:12px;font-weight:600}
+.conv-preview{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-time{font-size:9px;color:var(--light);flex-shrink:0}
+.conv-unread{background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.msg-thread{display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;padding:10px;background:var(--ice);border-radius:var(--r);margin-bottom:10px}
+.msg-bubble{max-width:70%;padding:8px 12px;border-radius:12px;font-size:12px;line-height:1.5}
+.msg-mine{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.msg-theirs{align-self:flex-start;background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg-time{font-size:8px;opacity:.6;margin-top:2px}
+.msg-input-wrap{display:flex;gap:6px}
+.msg-input-wrap input{flex:1}
+
+/* ── Bulk Upload ── */
+.csv-drop{border:2px dashed var(--border);border-radius:var(--r2);padding:32px;text-align:center;cursor:pointer;background:var(--ice);transition:border-color .2s}
+.csv-drop:hover{border-color:var(--blue)}
+.csv-drop.dragover{border-color:var(--green);background:#E8F5E9}
+.csv-icon{font-size:40px;margin-bottom:8px}
+.csv-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.csv-desc{font-size:11px;color:var(--muted)}
+.csv-preview{margin-top:16px;overflow-x:auto}
+.csv-preview table{width:100%;border-collapse:collapse;font-size:10px}
+.csv-preview th,.csv-preview td{padding:6px 8px;border:1px solid var(--border);text-align:left}
+.csv-preview th{background:var(--rink);color:#fff;font-weight:600}
+.csv-preview tr:nth-child(even){background:var(--ice)}
+
+/* ── Toast ── */
+.toast{position:fixed;top:66px;right:14px;z-index:300;padding:10px 16px;border-radius:var(--r);color:#fff;font-size:11px;font-weight:500;animation:tIn .25s ease;box-shadow:0 6px 20px rgba(0,0,0,.15);max-width:300px}
+.toast-ok{background:var(--green)}.toast-err{background:var(--red)}.toast-info{background:var(--blue)}
+@keyframes tIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* ── Loading / Empty ── */
+.loading{display:flex;align-items:center;justify-content:center;padding:32px;font-size:12px;color:var(--muted)}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .5s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:32px 14px}
+.empty-i{font-size:40px;margin-bottom:8px}
+.empty-t{font-family:'Bebas Neue',sans-serif;font-size:20px;margin-bottom:4px}
+.empty-d{font-size:11px;color:var(--muted);margin-bottom:14px}
+
+/* ── Pages ── */
+.page{display:none}.page.active{display:block}
+
+/* ── Fade ── */
+.fade-in{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
+.fade-in.visible{opacity:1;transform:none}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  nav{padding:0 10px;gap:4px}.n-links{display:none}
+  .hero{grid-template-columns:1fr;padding:80px 14px 40px}.hero-visual{display:none}
+  .sec,.info-page{padding-left:14px;padding-right:14px}
+  .sec-full,.search-wrap,.how-wrap,.club-feat,.cta-wrap,.trust-bar{padding-left:14px;padding-right:14px}
+  .grid-2,.grid-3,.grid-4,.cf-inner,.detail-grid{grid-template-columns:1fr}
+  .f-top{grid-template-columns:1fr}.f-bottom{flex-direction:column;gap:4px;text-align:center}
+  .search-bar{flex-direction:column}.s-select{border-left:none;border-top:1px solid var(--border)}
+  .f-row{grid-template-columns:1fr}
+  .m-foot{flex-direction:column;align-items:stretch}
+  .ads-grid,.clubs-grid{grid-template-columns:1fr}
+  .cats-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
+  .hero-stats{gap:16px}
+  .detail-actions{flex-direction:column}
+  .msg-bubble{max-width:85%}
+  .dash-stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ NAV ═══════ -->
+<nav id="navbar">
+  <a href="#" class="n-logo" onclick="go('home')"><span class="n-puck"></span>PUCKMARKET</a>
+  <ul class="n-links" id="nav-links">
+    <li><a href="#" onclick="go('browse')">Annonser</a></li>
+    <li><a href="#" onclick="go('clubs-page')">Föreningar</a></li>
+    <li><a href="#" onclick="go('about')">Om oss</a></li>
+    <li><a href="#" onclick="go('guide')">Köpguide</a></li>
+    <li><a href="#" onclick="go('faq')">FAQ</a></li>
+    <li><a href="#" id="n-my" class="hide" onclick="go('myads')">Mina annonser</a></li>
+    <li><a href="#" id="n-fav" class="hide" onclick="go('favorites')">Favoriter</a></li>
+    <li><a href="#" id="n-msg" class="hide" onclick="go('messages')">Meddelanden</a></li>
+    <li><a href="#" id="n-dash" class="hide" onclick="go('dashboard')">Dashboard</a></li>
+    <li><a href="#" id="n-admin" class="hide" onclick="go('admin')">Admin</a></li>
+  </ul>
+  <div class="n-right" id="nav-right">
+    <button class="btn btn-outline btn-sm" onclick="openM('login')">Logga in</button>
+    <button class="btn btn-dark btn-sm" onclick="openM('register')">Skapa konto</button>
+  </div>
+</nav>
+
+<!-- ═══════ HOME ═══════ -->
+<div class="page active" id="page-home">
+
+<section class="hero">
+  <div>
+    <div class="hero-tag">● Sveriges hockeymarknadsplats</div>
+    <h1>KÖP & SÄLJ<br><span>HOCKEYUTRUSTNING</span></h1>
+    <p class="hero-desc">Begagnat, nytt och matchanvänd utrustning från spelare och föreningar. 5% provision — resten är ditt.</p>
+    <div class="hero-actions">
+      <button class="btn btn-dark btn-lg" onclick="go('browse')">🏒 Bläddra annonser</button>
+      <button class="btn btn-outline btn-lg" onclick="reqAuth(()=>openM('new-ad'))">Sälj utrustning</button>
+      <button class="btn btn-green btn-lg" onclick="reqAuth(()=>openM('reg-club'))">🏟️ Förening?</button>
+    </div>
+    <div class="hero-stats" style="margin-top:28px">
+      <div><span class="h-stat-n" id="s-ads">0</span><span class="h-stat-l">Annonser</span></div>
+      <div><span class="h-stat-n" id="s-clubs">0</span><span class="h-stat-l">Föreningar</span></div>
+      <div><span class="h-stat-n" id="s-pro">0</span><span class="h-stat-l">Pro Stock</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="float-b" style="top:-8px;right:10px">🆕 Ny annons</div>
+    <div id="hero-cards"></div>
+    <div class="float-b" style="bottom:-4px;left:16px;animation-delay:1.5s">✅ Verifierad klubb</div>
+  </div>
+</section>
+
+<div class="rink-line"></div>
+
+<div class="search-wrap">
+  <div class="search-inner">
+    <h2>VAD LETAR DU EFTER?</h2>
+    <div class="search-bar">
+      <input type="text" class="s-input" id="hero-q" placeholder="Sök utrustning, märke, klubb...">
+      <button class="s-btn" onclick="heroSearch()">Sök →</button>
+    </div>
+  </div>
+</div>
+
+<section class="sec fade-in">
+  <p class="s-label">Kategorier</p>
+  <h2 class="s-title">BLÄDDRA EFTER TYP</h2>
+  <div class="cats-grid" id="cats-grid"></div>
+</section>
+
+<section class="sec fade-in">
+  <div class="flex-between" style="margin-bottom:16px">
+    <div><p class="s-label">Senaste</p><h2 class="s-title">NYLIGEN UPPLAGT</h2></div>
+    <button class="btn btn-outline" onclick="go('browse')">Visa alla →</button>
+  </div>
+  <div class="ads-grid" id="home-ads"></div>
+</section>
+
+<div class="club-feat fade-in">
+  <div class="cf-inner">
+    <div>
+      <p class="s-label">För föreningar</p>
+      <h2 class="s-title">SÄLJ KLUBBENS UTRUSTNING</h2>
+      <p>Pro stock, drakter och överskottsmaterial. PuckMarket tar 5% — ni behåller 95%.</p>
+      <ul class="feat-list">
+        <li><span>📦</span> Massuppladdning via CSV</li>
+        <li><span>✅</span> Verifierad klubb-badge</li>
+        <li><span>🏷️</span> Pro Stock-märkning</li>
+        <li><span>📊</span> Dashboard & statistik</li>
+        <li><span>💰</span> Tydlig provisionsredovisning</li>
+      </ul>
+      <button class="btn btn-gold btn-lg" onclick="reqAuth(()=>openM('reg-club'))">Registrera förening →</button>
+    </div>
+    <div class="feat-cards">
+      <div class="feat-card"><h4>🏒 Pro Stock</h4><p>Sälj matchanvänd utrustning med spelarinfo och säsongsdata.</p></div>
+      <div class="feat-card"><h4>📦 Bulk-försäljning</h4><p>50 klubbor? 20 hjälmar? Ladda upp allt via CSV på sekunder.</p></div>
+      <div class="feat-card"><h4>📊 5% provision</h4><p>Transparent avgift. Se exakt vad ni tjänar per försäljning.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="how-wrap fade-in">
+  <div class="how-inner">
+    <p class="s-label">Enkelt & tryggt</p>
+    <h2 class="s-title">SÅ FUNKAR DET</h2>
+    <div class="steps">
+      <div class="step"><div class="step-n">01</div><div class="step-i">📸</div><h3>Skapa annons</h3><p>Bilder, kategori, pris och frakt.</p></div>
+      <div class="step"><div class="step-n">02</div><div class="step-i">💬</div><h3>Kontakt</h3><p>Köpare skickar meddelande direkt.</p></div>
+      <div class="step"><div class="step-n">03</div><div class="step-i">💳</div><h3>Betala med Swish</h3><p>Snabbt, enkelt, 5% provision.</p></div>
+      <div class="step"><div class="step-n">04</div><div class="step-i">⭐</div><h3>Betygsätt</h3><p>Lämna omdöme efter affären.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="trust-bar fade-in">
+  <div class="trust-inner">
+    <div><div class="trust-i">🇸🇪</div><div class="trust-t">Svenskt</div><div class="trust-d">Byggt för svensk hockey</div></div>
+    <div><div class="trust-i">💳</div><div class="trust-t">Swish</div><div class="trust-d">Enkel betalning</div></div>
+    <div><div class="trust-i">📦</div><div class="trust-t">Frakt</div><div class="trust-d">PostNord, Instabox, hämta</div></div>
+    <div><div class="trust-i">⭐</div><div class="trust-t">Betyg</div><div class="trust-d">Se omdömen före köp</div></div>
+    <div><div class="trust-i">💰</div><div class="trust-t">5% avgift</div><div class="trust-d">Transparent provision</div></div>
+  </div>
+</div>
+
+<div class="cta-wrap fade-in">
+  <h2 class="s-title" style="font-size:clamp(32px,5vw,56px)">DAGS ATT SÄLJA?</h2>
+  <p>Din gamla utrustning kan finansiera nästa uppgradering.</p>
+  <button class="btn btn-lg" onclick="reqAuth(()=>openM('new-ad'))">Lägg upp annons</button>
+</div>
+
+<footer>
+  <div class="f-inner">
+    <div class="f-top">
+      <div class="f-brand"><a href="#" class="n-logo"><span class="n-puck" style="background:#fff"></span>PUCKMARKET</a><p class="f-desc">Sveriges marknadsplats för hockeyutrustning. 5% provision.</p></div>
+      <div class="f-col"><h4>Köp & Sälj</h4><ul><li><a href="#" onclick="go('browse')">Annonser</a></li><li><a href="#" onclick="go('clubs-page')">Föreningar</a></li></ul></div>
+      <div class="f-col"><h4>Information</h4><ul><li><a href="#" onclick="go('about')">Om oss</a></li><li><a href="#" onclick="go('guide')">Köpguide</a></li><li><a href="#" onclick="go('ratings-info')">Betyg</a></li><li><a href="#" onclick="go('shipping')">Frakt</a></li><li><a href="#" onclick="go('payment')">Betalning</a></li></ul></div>
+      <div class="f-col"><h4>Support</h4><ul><li><a href="#" onclick="go('faq')">FAQ</a></li><li><a href="#" onclick="go('safety')">Trygg handel</a></li><li><a href="#" onclick="go('terms')">Villkor</a></li><li><a href="#" onclick="go('privacy')">Integritet</a></li><li><a href="mailto:kontakt@puckmarket.se">Kontakt</a></li></ul></div>
+    </div>
+    <div class="f-bottom"><span>© 2025 PuckMarket — 5% provision per försäljning</span><span>❤️ Svensk hockey</span></div>
+  </div>
+</footer>
+</div>
+
+<!-- ═══════ BROWSE ═══════ -->
+<div class="page" id="page-browse">
+<section class="sec" style="padding-top:80px">
+  <p class="s-label">Alla annonser</p>
+  <h2 class="s-title">HITTA UTRUSTNING</h2>
+  <div class="search-bar" style="margin-bottom:14px;box-shadow:var(--shadow)">
+    <input type="text" class="s-input" id="b-q" placeholder="Sök..." oninput="filterAds()">
+    <select class="s-select" id="b-cat" onchange="filterAds()"><option value="">Alla kategorier</option></select>
+    <select class="s-select" id="b-city" onchange="filterAds()"><option value="">Alla städer</option></select>
+    <select class="s-select" id="b-cond" onchange="filterAds()"><option value="">Alla skick</option><option value="new">Nytt</option><option value="like_new">Som nytt</option><option value="good">Gott skick</option><option value="fair">Acceptabelt</option><option value="used">Använt</option></select>
+    <select class="s-select" id="b-sort" onchange="filterAds()"><option value="newest">Senaste</option><option value="cheapest">Billigast</option><option value="expensive">Dyrast</option></select>
+    <button class="s-btn" onclick="filterAds()">Sök</button>
+  </div>
+  <div class="tabs" id="b-tabs">
+    <button class="tab active" onclick="setF('all',this)">Alla</button>
+    <button class="tab" onclick="setF('pro',this)">🏷️ Pro Stock</button>
+    <button class="tab" onclick="setF('club',this)">🏟️ Föreningar</button>
+    <button class="tab" onclick="setF('priv',this)">👤 Privat</button>
+  </div>
+  <div id="b-results"><div class="loading"><div class="spinner"></div>Laddar...</div></div>
+  <div class="text-center" style="margin-top:24px"><button class="btn btn-dark btn-lg" onclick="reqAuth(()=>openM('new-ad'))">+ Lägg upp annons</button></div>
+</section>
+</div>
+
+<!-- ═══════ DETAIL ═══════ -->
+<div class="page" id="page-detail">
+<section class="sec" style="padding-top:80px">
+  <button class="btn btn-ghost btn-sm" onclick="goBack()">← Tillbaka</button>
+  <div id="detail-c" style="margin-top:12px"></div>
+</section>
+</div>
+
+<!-- ═══════ CLUBS ═══════ -->
+<div class="page" id="page-clubs-page">
+<section class="sec" style="padding-top:80px">
+  <p class="s-label">Föreningar</p>
+  <h2 class="s-title">KLUBBAR PÅ PUCKMARKET</h2>
+  <p class="s-desc">Föreningar säljer överskottsutrustning och pro stock. 5% provision — 95% till klubben.</p>
+  <div id="clubs-c"><div class="loading"><div class="spinner"></div>Laddar...</div></div>
+  <div class="text-center" style="margin-top:24px"><button class="btn btn-green btn-lg" onclick="reqAuth(()=>openM('reg-club'))">🏟️ Registrera förening</button></div>
+</section>
+</div>
+
+<!-- ═══════ CLUB PROFILE ═══════ -->
+<div class="page" id="page-club-profile"><section class="sec" style="padding-top:80px"><button class="btn btn-ghost btn-sm" onclick="go('clubs-page')">← Föreningar</button><div id="clubp-c" style="margin-top:12px"></div></section></div>
+
+<!-- ═══════ MY ADS ═══════ -->
+<div class="page" id="page-myads">
+<section class="sec" style="padding-top:80px">
+  <div class="flex-between" style="margin-bottom:20px">
+    <div><p class="s-label">Ditt konto</p><h2 class="s-title" style="margin-bottom:0">MINA ANNONSER</h2></div>
+    <button class="btn btn-dark" onclick="openM('new-ad')">+ Ny annons</button>
+  </div>
+  <div id="myads-c"><div class="loading"><div class="spinner"></div>Laddar...</div></div>
+</section>
+</div>
+
+<!-- ═══════ FAVORITES ═══════ -->
+<div class="page" id="page-favorites">
+<section class="sec" style="padding-top:80px">
+  <p class="s-label">Sparade</p>
+  <h2 class="s-title">MINA FAVORITER</h2>
+  <div id="favs-c"><div class="loading"><div class="spinner"></div>Laddar...</div></div>
+</section>
+</div>
+
+<!-- ═══════ MESSAGES ═══════ -->
+<div class="page" id="page-messages">
+<section class="sec" style="padding-top:80px">
+  <p class="s-label">Inkorg</p>
+  <h2 class="s-title">MEDDELANDEN</h2>
+  <div id="msg-c"><div class="loading"><div class="spinner"></div>Laddar...</div></div>
+</section>
+</div>
+
+<!-- ═══════ CONVERSATION ═══════ -->
+<div class="page" id="page-conversation">
+<section class="sec" style="padding-top:80px">
+  <button class="btn btn-ghost btn-sm" onclick="go('messages')">← Meddelanden</button>
+  <div id="conv-c" style="margin-top:12px"></div>
+</section>
+</div>
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div class="page" id="page-dashboard">
+<section class="sec" style="padding-top:80px">
+  <div class="flex-between" style="margin-bottom:20px">
+    <div><p class="s-label">Förenings-dashboard</p><h2 class="s-title" style="margin-bottom:0" id="d-name">DASHBOARD</h2></div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-green" onclick="openM('new-club-ad')">+ Klubb-annons</button>
+      <button class="btn btn-outline" onclick="go('bulk')">📦 Massuppladdning</button>
+    </div>
+  </div>
+  <div class="dash-stats" id="d-stats"></div>
+  <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin-bottom:10px">KLUBBENS ANNONSER</h3>
+  <div id="d-ads"><div class="loading"><div class="spinner"></div>Laddar...</div></div>
+  <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;margin:20px 0 10px">FÖRSÄLJNINGAR & PROVISION</h3>
+  <div id="d-orders"></div>
+</section>
+</div>
+
+<!-- ═══════ BULK UPLOAD ═══════ -->
+<div class="page" id="page-bulk">
+<section class="sec" style="padding-top:80px">
+  <button class="btn btn-ghost btn-sm" onclick="go('dashboard')">← Dashboard</button>
+  <p class="s-label" style="margin-top:12px">Massuppladdning</p>
+  <h2 class="s-title">LADDA UPP VIA CSV</h2>
+  <p class="s-desc">Ladda upp en CSV-fil med kolumnerna: <strong>title, description, category, condition, price, brand, model, size, city, quantity, is_pro_stock, pro_stock_info</strong></p>
+  <div class="csv-drop" id="csv-drop" onclick="document.getElementById('csv-file').click()">
+    <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleCSV(this)">
+    <div class="csv-icon">📦</div>
+    <div class="csv-title">Dra hit din CSV-fil eller klicka</div>
+    <div class="csv-desc">Max 500 rader per uppladdning</div>
+  </div>
+  <div id="csv-preview-c"></div>
+  <div id="csv-actions" class="hide" style="margin-top:14px;display:flex;gap:8px;justify-content:center">
+    <button class="btn btn-green btn-lg" onclick="processCSV()">✅ Importera alla rader</button>
+    <button class="btn btn-outline" onclick="clearCSV()">Avbryt</button>
+  </div>
+  <div id="csv-result"></div>
+</section>
+</div>
+
+<!-- ═══════ ADMIN ═══════ -->
+<div class="page" id="page-admin">
+<section class="sec" style="padding-top:80px">
+  <p class="s-label">Administration</p>
+  <h2 class="s-title">ADMIN-PANEL</h2>
+  <div class="tabs" style="margin-bottom:20px">
+    <button class="tab active" onclick="adminTab('overview',this)">Översikt</button>
+    <button class="tab" onclick="adminTab('users',this)">Användare</button>
+    <button class="tab" onclick="adminTab('orgs',this)">Föreningar</button>
+    <button class="tab" onclick="adminTab('listings',this)">Annonser</button>
+    <button class="tab" onclick="adminTab('orders',this)">Ordrar</button>
+    <button class="tab" onclick="adminTab('revenue',this)">Provision</button>
+    <button class="tab" onclick="adminTab('reports',this)">Rapporter</button>
+  </div>
+  <div id="admin-c"></div>
+</section>
+</div>
+
+<!-- ═══════ INFO PAGES ═══════ -->
+<div class="page" id="page-about"><div class="info-page">
+  <p class="s-label">Om oss</p><h1>OM PUCKMARKET</h1>
+  <p class="subtitle">Sveriges första marknadsplats byggd specifikt för ishockeyutrustning. 5% provision — transparent och enkelt.</p>
+  <h2>Vår vision</h2><p>Varje hockeyspelare ska ha tillgång till bra utrustning. Genom att ge begagnad och pro stock-utrustning nytt liv gör vi hockey billigare och mer hållbart.</p>
+  <h2>Affärsmodell</h2><p>PuckMarket tar <strong>5% provision</strong> på varje genomförd försäljning. Säljaren behåller 95%. Inga dolda avgifter, inga abonnemang.</p>
+  <div class="prov-box"><div class="prov-row"><span>Försäljningspris</span><span>1 000 kr</span></div><div class="prov-row"><span>PuckMarkets avgift (5%)</span><span class="prov-fee">-50 kr</span></div><div class="prov-row total"><span>Säljaren får</span><span class="prov-net">950 kr</span></div></div>
+  <h2>Vad gör oss unika?</h2>
+  <div class="info-grid"><div class="info-card"><h4>🏒 Bara hockey</h4><p>Bättre sök, rätt kategorier, community som förstår.</p></div><div class="info-card"><h4>🏟️ Föreningspartner</h4><p>Klubbar säljer överskott med verifiering och dashboard.</p></div><div class="info-card"><h4>🏷️ Pro Stock</h4><p>Matchanvänd utrustning märkt med spelare och säsong.</p></div><div class="info-card"><h4>📦 Massuppladdning</h4><p>CSV-import för stora lager. 50 produkter på sekunder.</p></div></div>
+  <h2>Kontakt</h2><p>E-post: <a href="mailto:kontakt@puckmarket.se" style="color:var(--blue)">kontakt@puckmarket.se</a></p>
+</div></div>
+
+<div class="page" id="page-guide"><div class="info-page">
+  <p class="s-label">Köpguide</p><h1>SÅ KÖPER DU</h1><p class="subtitle">Steg-för-steg guide för köp på PuckMarket.</p>
+  <h2>1. Hitta utrustning</h2><p>Sök, filtrera på kategori, stad, skick, pris och typ (privat/förening/pro stock).</p>
+  <h2>2. Kontakta säljaren</h2><p>Skicka meddelande direkt via plattformen. Fråga om skick, storlek eller frakt.</p>
+  <h2>3. Betala</h2>
+  <div class="swish-box"><h3>💳 Swish — Rekommenderat</h3><p>Snabbt och säkert. PuckMarket tar 5% provision som dras från säljarens del.</p></div>
+  <h2>4. Frakt</h2>
+  <div class="info-grid"><div class="info-card"><h4>📦 PostNord</h4><p>1-3 vardagar. Spårningsnummer.</p></div><div class="info-card"><h4>📦 Instabox</h4><p>Snabb leverans till skåp.</p></div><div class="info-card"><h4>🚗 Hämta</h4><p>Möt säljaren på plats.</p></div><div class="info-card"><h4>🚚 Bussgods</h4><p>Bra för tung utrustning.</p></div></div>
+  <h2>5. Betygsätt</h2><p>Lämna betyg efter köpet för att bygga förtroende.</p>
+</div></div>
+
+<div class="page" id="page-ratings-info"><div class="info-page">
+  <p class="s-label">Betyg</p><h1>BETYGSSYSTEMET</h1><p class="subtitle">Så fungerar betyg på PuckMarket.</p>
+  <div class="rating-row"><div class="rating-stars">⭐⭐⭐⭐⭐</div><div class="rating-desc"><strong>5 — Utmärkt.</strong> Perfekt upplevelse.</div></div>
+  <div class="rating-row"><div class="rating-stars">⭐⭐⭐⭐</div><div class="rating-desc"><strong>4 — Bra.</strong> Mycket nöjd.</div></div>
+  <div class="rating-row"><div class="rating-stars">⭐⭐⭐</div><div class="rating-desc"><strong>3 — Okej.</strong> Acceptabel men brister.</div></div>
+  <div class="rating-row"><div class="rating-stars">⭐⭐</div><div class="rating-desc"><strong>2 — Dåligt.</strong> Stämde inte med beskrivning.</div></div>
+  <div class="rating-row"><div class="rating-stars">⭐</div><div class="rating-desc"><strong>1 — Mycket dåligt.</strong> Allvarliga problem.</div></div>
+</div></div>
+
+<div class="page" id="page-payment"><div class="info-page">
+  <p class="s-label">Betalning</p><h1>SÅ BETALAR DU</h1><p class="subtitle">Swish rekommenderas. 5% provision på varje försäljning.</p>
+  <div class="swish-box"><h3>📱 Swish</h3><p>Enklast och snabbast. Kvitto direkt i appen.</p></div>
+  <h2>Provision</h2>
+  <div class="prov-box"><div class="prov-row"><span>Köparen betalar</span><span>1 000 kr</span></div><div class="prov-row"><span>PuckMarket (5%)</span><span class="prov-fee">-50 kr</span></div><div class="prov-row total"><span>Säljaren får</span><span class="prov-net">950 kr</span></div></div>
+  <h2>Säkerhetstips</h2><ul><li>Betala aldrig i förskott utan spårning</li><li>Inspektera vid hämtning</li><li>Spara kvitto i Swish</li></ul>
+</div></div>
+
+<div class="page" id="page-shipping"><div class="info-page">
+  <p class="s-label">Frakt</p><h1>FRAKTALTERNATIV</h1><p class="subtitle">Flera sätt att leverera.</p>
+  <div class="info-grid"><div class="info-card"><h4>📦 PostNord</h4><p>Litet ~49-79kr, Stort ~99-149kr</p></div><div class="info-card"><h4>📦 Instabox</h4><p>~39-69kr, hämta i skåp</p></div><div class="info-card"><h4>🚗 Hämta</h4><p>Gratis, möts på plats</p></div><div class="info-card"><h4>🚚 Bussgods</h4><p>~100-200kr, tungt gods</p></div></div>
+</div></div>
+
+<div class="page" id="page-safety"><div class="info-page">
+  <p class="s-label">Trygghet</p><h1>TRYGG HANDEL</h1><p class="subtitle">Tips och regler för säkra affärer.</p>
+  <h2>Regler</h2><ul><li>Registrerat konto krävs</li><li>Ärliga beskrivningar</li><li>Bilder på faktisk produkt</li><li>Ingen stulen utrustning</li></ul>
+  <h2>Tips köpare</h2><ul><li>Granska annons och betyg</li><li>Ställ frågor före köp</li><li>Möts upp om möjligt</li></ul>
+  <h2>Tips säljare</h2><ul><li>Tydliga bilder</li><li>Ärligt skick</li><li>Svara snabbt</li><li>Spårningsnummer vid frakt</li></ul>
+  <p>Problem? <a href="mailto:kontakt@puckmarket.se" style="color:var(--blue)">kontakt@puckmarket.se</a></p>
+</div></div>
+
+<div class="page" id="page-faq"><div class="info-page">
+  <p class="s-label">FAQ</p><h1>VANLIGA FRÅGOR</h1>
+  <h2>Vad kostar det?</h2><p>5% provision per försäljning. Gratis att lägga upp annonser.</p>
+  <h2>Hur betalar jag?</h2><p>Direkt mellan köpare och säljare, oftast Swish. Provisionen hanteras vid orderbekräftelse.</p>
+  <h2>Vad är Pro Stock?</h2><p>Utrustning använd av spelare i föreningar. Märks med orange badge.</p>
+  <h2>Hur funkar massuppladdning?</h2><p>Föreningar kan importera CSV-filer med många produkter samtidigt.</p>
+  <h2>Hur registrerar jag förening?</h2><p>Skapa konto → Klicka "Registrera förening" → Fyll i info → Klart.</p>
+  <h2>Kan jag ta bort annons?</h2><p>Ja, via "Mina annonser".</p>
+  <h2>Kontakt?</h2><p><a href="mailto:kontakt@puckmarket.se" style="color:var(--blue)">kontakt@puckmarket.se</a></p>
+</div></div>
+
+<div class="page" id="page-terms"><div class="info-page">
+  <p class="s-label">Juridiskt</p><h1>VILLKOR</h1><p class="subtitle">Uppdaterad 2025</p>
+  <h2>Allmänt</h2><p>PuckMarket är en marknadsplats. Vi tar 5% provision per försäljning.</p>
+  <h2>Provision</h2><p>5% av försäljningspriset tillfaller PuckMarket. Säljaren får 95%.</p>
+  <h2>Konto</h2><p>Minst 18 år eller målsmans godkännande.</p>
+  <h2>Annonser</h2><p>Beskrivningar ska vara korrekta. Vi kan ta bort vilseledande annonser.</p>
+</div></div>
+
+<div class="page" id="page-privacy"><div class="info-page">
+  <p class="s-label">Juridiskt</p><h1>INTEGRITETSPOLICY</h1><p class="subtitle">Uppdaterad 2025</p>
+  <h2>Data vi samlar</h2><p>E-post, profilinfo och annonsdata.</p>
+  <h2>Hur vi använder data</h2><p>För att driva plattformen, visa annonser och hantera provision.</p>
+  <h2>Kontakt</h2><p><a href="mailto:kontakt@puckmarket.se" style="color:var(--blue)">kontakt@puckmarket.se</a></p>
+</div></div>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- Login -->
+<div class="modal-overlay" id="modal-login"><div class="modal"><button class="m-close" onclick="closeM('login')">✕</button><p class="m-title">LOGGA IN</p><p class="m-sub">Välkommen tillbaka!</p>
+<div class="fg"><label class="fl">E-post</label><input type="email" class="fi" id="f-le" placeholder="din@email.se"></div>
+<div class="fg"><label class="fl">Lösenord</label><input type="password" class="fi" id="f-lp" placeholder="Lösenord"></div>
+<div class="m-foot"><button class="btn btn-ghost btn-sm" onclick="closeM('login');openM('register')">Skapa konto</button><button class="btn btn-dark" onclick="doLogin()">Logga in →</button></div></div></div>
+
+<!-- Register -->
+<div class="modal-overlay" id="modal-register"><div class="modal"><button class="m-close" onclick="closeM('register')">✕</button><p class="m-title">SKAPA KONTO</p><p class="m-sub">Gratis. Börja köpa och sälja.</p>
+<div class="fg"><label class="fl">Namn</label><input type="text" class="fi" id="f-rn" placeholder="Ditt namn"></div>
+<div class="fg"><label class="fl">E-post</label><input type="email" class="fi" id="f-re" placeholder="din@email.se"></div>
+<div class="fg"><label class="fl">Lösenord (minst 6)</label><input type="password" class="fi" id="f-rp" placeholder="Lösenord"></div>
+<div class="fg"><label class="fl">Stad</label><input type="text" class="fi" id="f-rc" placeholder="Stockholm"></div>
+<div class="m-foot"><button class="btn btn-ghost btn-sm" onclick="closeM('register');openM('login')">Har konto</button><button class="btn btn-dark" onclick="doRegister()">Skapa konto →</button></div></div></div>
+
+<!-- New Ad (private) -->
+<div class="modal-overlay" id="modal-new-ad"><div class="modal"><button class="m-close" onclick="closeM('new-ad')">✕</button><p class="m-title">NY ANNONS</p><p class="m-sub">Sälj din utrustning. 5% provision vid försäljning.</p>
+<div class="fg"><label class="fl">Bild</label><div class="img-up" onclick="$('f-img').click()"><input type="file" id="f-img" accept="image/*" onchange="prevImg(this,'f-img-p')"><p id="f-img-p">📸 Välj bild</p></div></div>
+<div class="fg"><label class="fl">Rubrik</label><input type="text" class="fi" id="f-title" placeholder="T.ex. Bauer Supreme M4 strl 43"></div>
+<div class="fg"><label class="fl">Beskrivning</label><textarea class="fi ft" id="f-desc" placeholder="Skick, storlek, info..."></textarea></div>
+<div class="f-row"><div class="fg"><label class="fl">Kategori</label><select class="fi" id="f-cat"></select></div><div class="fg"><label class="fl">Pris (SEK)</label><input type="number" class="fi" id="f-price" placeholder="850" oninput="showProvision()"></div></div>
+<div class="f-row"><div class="fg"><label class="fl">Skick</label><select class="fi" id="f-cond"><option value="new">Nytt/oanvänt</option><option value="like_new">Som nytt</option><option value="good" selected>Gott skick</option><option value="fair">Acceptabelt</option><option value="used">Använt</option></select></div><div class="fg"><label class="fl">Stad</label><input type="text" class="fi" id="f-city" placeholder="Stockholm"></div></div>
+<div class="f-row"><div class="fg"><label class="fl">Märke</label><input type="text" class="fi" id="f-brand" placeholder="Bauer, CCM..."></div><div class="fg"><label class="fl">Storlek</label><input type="text" class="fi" id="f-size" placeholder="43, Senior L..."></div></div>
+<div class="f-row"><div class="fg"><label class="fl">Frakt</label><select class="fi" id="f-ship"><option value="pickup">Hämtas</option><option value="postnord">PostNord</option><option value="instabox">Instabox</option></select></div><div class="fg"><label class="fl">Betalning</label><select class="fi" id="f-pay"><option value="swish">Swish</option><option value="cash">Kontant</option></select></div></div>
+<div id="prov-preview"></div>
+<div class="m-foot"><span style="font-size:9px;color:var(--muted)">5% provision vid försäljning</span><button class="btn btn-dark" onclick="doCreateAd()">Lägg upp →</button></div></div></div>
+
+<!-- New Club Ad -->
+<div class="modal-overlay" id="modal-new-club-ad"><div class="modal"><button class="m-close" onclick="closeM('new-club-ad')">✕</button><p class="m-title">🏟️ KLUBB-ANNONS</p><p class="m-sub">Under föreningens namn. 5% provision.</p>
+<div class="fg"><label class="fl">Bild</label><div class="img-up" onclick="$('fc-img').click()"><input type="file" id="fc-img" accept="image/*" onchange="prevImg(this,'fc-img-p')"><p id="fc-img-p">📸 Välj bild</p></div></div>
+<div class="fg"><label class="fl">Rubrik</label><input type="text" class="fi" id="fc-title" placeholder="50x Warrior Alpha klubbor"></div>
+<div class="fg"><label class="fl">Beskrivning</label><textarea class="fi ft" id="fc-desc"></textarea></div>
+<div class="f-row"><div class="fg"><label class="fl">Kategori</label><select class="fi" id="fc-cat"></select></div><div class="fg"><label class="fl">Pris/st (SEK)</label><input type="number" class="fi" id="fc-price" placeholder="450"></div></div>
+<div class="f-row"><div class="fg"><label class="fl">Skick</label><select class="fi" id="fc-cond"><option value="new">Nytt</option><option value="like_new">Som nytt</option><option value="good" selected>Gott skick</option><option value="fair">Acceptabelt</option><option value="used">Använt</option></select></div><div class="fg"><label class="fl">Antal</label><input type="number" class="fi" id="fc-qty" value="1" min="1"></div></div>
+<div class="f-row"><div class="fg"><label class="fl">Märke</label><input type="text" class="fi" id="fc-brand"></div><div class="fg"><label class="fl">Storlek</label><input type="text" class="fi" id="fc-size"></div></div>
+<label class="f-check"><input type="checkbox" id="fc-pro" onchange="$('fc-pro-g').classList.toggle('hide')"> 🏷️ Pro Stock / Matchanvänd</label>
+<div class="fg hide" id="fc-pro-g"><label class="fl">Pro Stock-info</label><input type="text" class="fi" id="fc-proinfo" placeholder="Använd av #21 i SHL 23/24"></div>
+<div class="m-foot"><span style="font-size:9px;color:var(--muted)">5% provision</span><button class="btn btn-green" onclick="doCreateClubAd()">Lägg upp →</button></div></div></div>
+
+<!-- Register Club -->
+<div class="modal-overlay" id="modal-reg-club"><div class="modal"><button class="m-close" onclick="closeM('reg-club')">✕</button><p class="m-title">🏟️ REGISTRERA FÖRENING</p><p class="m-sub">Sälj överskott. 5% provision — 95% till klubben.</p>
+<div class="fg"><label class="fl">Föreningens namn</label><input type="text" class="fi" id="rc-name" placeholder="Djurgårdens IF Hockey"></div>
+<div class="f-row"><div class="fg"><label class="fl">Org.nr</label><input type="text" class="fi" id="rc-org" placeholder="556XXX-XXXX"></div><div class="fg"><label class="fl">Ort</label><input type="text" class="fi" id="rc-city" placeholder="Stockholm"></div></div>
+<div class="fg"><label class="fl">Kontaktperson</label><input type="text" class="fi" id="rc-contact" placeholder="Namn"></div>
+<div class="fg"><label class="fl">Beskrivning</label><textarea class="fi ft" id="rc-desc" placeholder="Kort om föreningen..."></textarea></div>
+<div class="m-foot"><span style="font-size:9px;color:var(--muted)">Gratis registrering</span><button class="btn btn-green" onclick="doRegClub()">Registrera →</button></div></div></div>
+
+<!-- Send Message -->
+<div class="modal-overlay" id="modal-msg"><div class="modal"><button class="m-close" onclick="closeM('msg')">✕</button><p class="m-title">💬 SKICKA MEDDELANDE</p><p class="m-sub" id="msg-sub">Till säljaren</p>
+<div class="fg"><label class="fl">Meddelande</label><textarea class="fi ft" id="msg-text" placeholder="Hej! Jag är intresserad av..."></textarea></div>
+<div class="m-foot"><span></span><button class="btn btn-dark" onclick="doSendMsg()">Skicka →</button></div></div></div>
+
+<!-- Buy / Order -->
+<div class="modal-overlay" id="modal-buy"><div class="modal"><button class="m-close" onclick="closeM('buy')">✕</button><p class="m-title">🛒 KÖP</p><p class="m-sub" id="buy-sub">Bekräfta ditt köp</p>
+<div id="buy-details"></div>
+<div class="m-foot"><button class="btn btn-outline" onclick="closeM('buy')">Avbryt</button><button class="btn btn-dark" onclick="doCreateOrder()">Bekräfta köp →</button></div></div></div>
+
+<!-- Report -->
+<div class="modal-overlay" id="modal-report"><div class="modal"><button class="m-close" onclick="closeM('report')">✕</button><p class="m-title">🚩 RAPPORTERA</p>
+<div class="fg"><label class="fl">Anledning</label><select class="fi" id="rep-reason"><option>Felaktig beskrivning</option><option>Misstänkt bedrägeri</option><option>Olämpligt innehåll</option><option>Stulen utrustning</option><option>Annat</option></select></div>
+<div class="fg"><label class="fl">Beskrivning</label><textarea class="fi ft" id="rep-desc" placeholder="Berätta mer..."></textarea></div>
+<div class="m-foot"><span></span><button class="btn btn-red" onclick="doReport()">Skicka rapport →</button></div></div></div>
+
+<!-- Review -->
+<div class="modal-overlay" id="modal-review"><div class="modal"><button class="m-close" onclick="closeM('review')">✕</button><p class="m-title">⭐ BETYGSÄTT</p>
+<div class="fg"><label class="fl">Betyg</label><select class="fi" id="rev-rating"><option value="5">⭐⭐⭐⭐⭐ Utmärkt</option><option value="4">⭐⭐⭐⭐ Bra</option><option value="3">⭐⭐⭐ Okej</option><option value="2">⭐⭐ Dåligt</option><option value="1">⭐ Mycket dåligt</option></select></div>
+<div class="fg"><label class="fl">Kommentar</label><textarea class="fi ft" id="rev-comment" placeholder="Din upplevelse..."></textarea></div>
+<div class="m-foot"><span></span><button class="btn btn-dark" onclick="doReview()">Skicka →</button></div></div></div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════ -->
+<script>
+const SB_URL='https://mkzyouozswjhzgziabfc.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1renlvdW96c3dqaHpnemlhYmZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzg2NDEsImV4cCI6MjA5MzU1NDY0MX0.-AYirZ-BNHoyIynaZ62fUVB-ME6wc8_dmlj-5-BJpl8';
+const FEE=0.05;
+let db,U=null,UP=null,UC=null,ads=[],cats=[],clubs=[],cf='all',prevP='browse',curAd=null,curConv=null,csvData=null,reportTarget={};
+
+try{db=supabase.createClient(SB_URL,SB_KEY)}catch(e){console.error(e)}
+const $=id=>document.getElementById(id);
+const gv=id=>$(id)?.value?.trim()||'';
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function toast(m,t='ok'){const e=document.createElement('div');e.className='toast toast-'+t;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3500)}
+function formatSEK(n){return new Intl.NumberFormat('sv-SE',{style:'currency',currency:'SEK',minimumFractionDigits:0}).format(n)}
+function timeAgo(d){const m=Math.floor((Date.now()-new Date(d))/60000);if(m<1)return'Nu';if(m<60)return m+' min';const h=Math.floor(m/60);if(h<24)return h+' tim';const dy=Math.floor(h/24);return dy+' d'}
+function calcFee(price,qty=1){const sub=price*qty;const fee=Math.round(sub*FEE*100)/100;return{sub,fee,net:sub-fee}}
+
+// NAV
+window.addEventListener('scroll',()=>$('navbar').classList.toggle('scrolled',scrollY>10));
+
+// ── AUTH ──
+async function doRegister(){
+  const n=gv('f-rn'),e=gv('f-re'),p=gv('f-rp'),c=gv('f-rc');
+  if(!e||!p)return toast('Fyll i alla fält','err');
+  if(p.length<6)return toast('Minst 6 tecken','err');
+  try{
+    const{error}=await db.auth.signUp({email:e,password:p,options:{data:{full_name:n,display_name:n.split(' ')[0],city:c}}});
+    if(error)throw error;
+    toast('Konto skapat!');closeM('register');chkAuth();
+  }catch(e){toast(e.message,'err')}
+}
+async function doLogin(){
+  const e=gv('f-le'),p=gv('f-lp');
+  if(!e||!p)return toast('Fyll i alla fält','err');
+  try{
+    const{error}=await db.auth.signInWithPassword({email:e,password:p});
+    if(error)throw error;
+    toast('Inloggad!');closeM('login');chkAuth();
+  }catch(e){toast(e.message,'err')}
+}
+async function doLogout(){await db.auth.signOut();U=null;UP=null;UC=null;updNav();go('home');toast('Utloggad')}
+async function chkAuth(){
+  try{const{data:{user}}=await db.auth.getUser();U=user}catch(e){U=null}
+  if(U){
+    try{const{data}=await db.from('profiles').select('*').eq('id',U.id).single();UP=data}catch(e){UP=null}
+    try{const{data}=await db.from('organizations').select('*').eq('owner_id',U.id).single();UC=data}catch(e){UC=null}
+  }
+  updNav();
+}
+function updNav(){
+  const r=$('nav-right');
+  if(U&&UP){
+    r.innerHTML=`<span class="n-user">${esc(UP.display_name||UP.email)}</span>
+    <button class="btn btn-dark btn-sm" onclick="openM('new-ad')">+ Annons</button>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logga ut</button>`;
+    $('n-my').classList.remove('hide');
+    $('n-fav').classList.remove('hide');
+    $('n-msg').classList.remove('hide');
+    $('n-dash').classList.toggle('hide',!UC);
+    $('n-admin').classList.toggle('hide',UP.role!=='admin');
+  }else{
+    r.innerHTML='<button class="btn btn-outline btn-sm" onclick="openM(\'login\')">Logga in</button><button class="btn btn-dark btn-sm" onclick="openM(\'register\')">Skapa konto</button>';
+    ['n-my','n-fav','n-msg','n-dash','n-admin'].forEach(id=>$(id).classList.add('hide'));
+  }
+}
+function reqAuth(cb){U?cb():openM('login')}
+
+// ── CATEGORIES ──
+async function ldCats(){
+  try{const{data}=await db.from('categories').select('*').eq('is_active',true).order('sort_order');cats=data||[]}catch(e){cats=[]}
+  renderCats();populateCatSelects();
+}
+function renderCats(){
+  const g=$('cats-grid');if(!g)return;
+  g.innerHTML=cats.map(c=>`<div class="cat-card" onclick="filterByCat('${c.slug}')"><span class="cat-icon">${c.icon||'📦'}</span><div class="cat-name">${esc(c.name)}</div><div class="cat-count">${c.listing_count||0}</div></div>`).join('');
+}
+function populateCatSelects(){
+  const opts='<option value="">Alla kategorier</option>'+cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  ['b-cat','f-cat','fc-cat'].forEach(id=>{if($(id))$(id).innerHTML=opts});
+}
+function filterByCat(slug){go('browse');const c=cats.find(x=>x.slug===slug);if(c&&$('b-cat'))$('b-cat').value=c.id;filterAds()}
+
+// ── LISTINGS ──
+async function ldAds(){
+  try{
+    const{data}=await db.from('listings').select('*,profiles(display_name,rating_avg,is_verified),organizations(name,is_verified),categories(name,slug,icon),listing_images(url,is_primary)').eq('status','active').order('created_at',{ascending:false});
+    ads=data||[];
+  }catch(e){ads=[]}
+  updStats();renderHome();renderBrowse();populateCities();
+}
+function updStats(){
+  if($('s-ads'))$('s-ads').textContent=ads.length;
+  if($('s-clubs'))$('s-clubs').textContent=clubs.length;
+  if($('s-pro'))$('s-pro').textContent=ads.filter(a=>a.is_pro_stock).length;
+}
+function getImg(a){
+  const imgs=a.listing_images||[];
+  const primary=imgs.find(i=>i.is_primary);
+  return primary?.url||imgs[0]?.url||null;
+}
+function catIcon(a){return a.categories?.icon||'🏒'}
+function condLabel(c){return{new:'Nytt',like_new:'Som nytt',good:'Gott skick',fair:'Acceptabelt',used:'Använt'}[c]||c}
+function condClass(c){if(c==='new')return'b-new';if(c==='used'||c==='fair')return'b-cond';return'b-cond'}
+
+function renderAdCard(a){
+  const img=getImg(a);const org=a.organizations;const seller=a.profiles;
+  return`<div class="ad-card" onclick="showAd('${a.id}')">
+    <div class="adc-img">${img?`<img src="${img}" alt="">`:`<span>${catIcon(a)}</span>`}
+      <div class="adc-tags">
+        <span class="badge ${condClass(a.condition)}">${condLabel(a.condition)}</span>
+        ${a.is_pro_stock?'<span class="badge b-pro">PRO STOCK</span>':''}
+        ${org?`<span class="badge b-club">✅ ${esc(org.name)}</span>`:''}
+      </div>
+      ${a.quantity>1?`<span class="badge b-qty adc-qty">${a.quantity} st</span>`:''}
+    </div>
+    <div class="adc-body">
+      <div class="adc-title">${esc(a.title)}</div>
+      <div class="adc-meta">${[a.brand,a.size,a.city].filter(Boolean).map(esc).join(' · ')} · ${timeAgo(a.created_at)}</div>
+      <div class="adc-foot">
+        <span class="adc-price">${formatSEK(a.price)}${a.quantity>1?'/st':''}</span>
+        <span class="adc-seller"><span class="dot"></span>${org?esc(org.name):esc(seller?.display_name||'')}</span>
+      </div>
+    </div></div>`;
+}
+
+function renderHome(){
+  const g=$('home-ads');if(!g)return;
+  const recent=ads.slice(0,8);
+  g.innerHTML=recent.length?recent.map(renderAdCard).join(''):'<div class="empty"><div class="empty-i">🏒</div><div class="empty-t">Inga annonser ännu</div></div>';
+  // Hero cards
+  const hc=$('hero-cards');if(!hc)return;
+  const top=ads.slice(0,4);
+  hc.innerHTML=top.length?top.map(a=>{
+    const org=a.organizations;
+    return`<div class="h-card" onclick="showAd('${a.id}')"><div class="h-card-icon">${catIcon(a)}</div><div class="h-card-info"><div class="h-card-title">${esc(a.title)}</div><div class="h-card-meta">${esc(a.city||'')} · ${timeAgo(a.created_at)}</div><div class="h-card-badges"><span class="badge ${condClass(a.condition)}">${condLabel(a.condition)}</span>${a.is_pro_stock?'<span class="badge b-pro">PRO</span>':''}${org?'<span class="badge b-club">'+esc(org.name)+'</span>':''}</div></div><div class="h-card-price">${formatSEK(a.price)}</div></div>`
+  }).join(''):'';
+}
+
+function getFiltered(){
+  let f=[...ads];
+  const q=(gv('b-q')||'').toLowerCase();
+  const cat=gv('b-cat');
+  const city=gv('b-city');
+  const cond=gv('b-cond');
+  const sort=gv('b-sort');
+  if(q)f=f.filter(a=>(a.title+' '+(a.description||'')+' '+(a.brand||'')).toLowerCase().includes(q));
+  if(cat)f=f.filter(a=>a.category_id===cat);
+  if(city)f=f.filter(a=>a.city===city);
+  if(cond)f=f.filter(a=>a.condition===cond);
+  if(cf==='pro')f=f.filter(a=>a.is_pro_stock);
+  if(cf==='club')f=f.filter(a=>a.org_id);
+  if(cf==='priv')f=f.filter(a=>!a.org_id);
+  if(sort==='cheapest')f.sort((a,b)=>a.price-b.price);
+  else if(sort==='expensive')f.sort((a,b)=>b.price-a.price);
+  return f;
+}
+function renderBrowse(list){
+  const f=list||getFiltered();
+  const c=$('b-results');if(!c)return;
+  c.innerHTML=f.length?'<div class="ads-grid">'+f.map(renderAdCard).join('')+'</div>':'<div class="empty"><div class="empty-i">🏒</div><div class="empty-t">Inga annonser</div><div class="empty-d">Prova ändra sökning</div></div>';
+}
+function filterAds(){renderBrowse()}
+function setF(f,el){cf=f;document.querySelectorAll('#b-tabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');filterAds()}
+function populateCities(){
+  const cities=[...new Set(ads.map(a=>a.city).filter(Boolean))].sort();
+  const s=$('b-city');if(!s)return;
+  s.innerHTML='<option value="">Alla städer</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join('');
+}
+function heroSearch(){go('browse');if($('b-q'))$('b-q').value=gv('hero-q');filterAds()}
+
+// ── AD DETAIL ──
+async function showAd(id){
+  curAd=ads.find(a=>a.id===id);if(!curAd)return;
+  // Increment view
+  db.from('listings').update({view_count:(curAd.view_count||0)+1}).eq('id',id).then(()=>{});
+  const a=curAd;const img=getImg(a);const org=a.organizations;const seller=a.profiles;
+  const f=calcFee(a.price,1);
+  const isFav=U?await checkFav(id):false;
+  const reviews=await getReviews(a.seller_id);
+  
+  $('detail-c').innerHTML=`<div class="detail">
+    ${img?`<img class="detail-img" src="${img}" alt="">`:''}
+    <div class="detail-tags">
+      <span class="badge ${condClass(a.condition)}">${condLabel(a.condition)}</span>
+      ${a.is_pro_stock?'<span class="badge b-pro">🏷️ PRO STOCK</span>':''}
+      ${org?`<span class="badge b-club">✅ ${esc(org.name)}</span>`:''}
+      ${a.quantity>1?`<span class="badge b-qty">${a.quantity} st</span>`:''}
+    </div>
+    <div class="detail-title">${esc(a.title)}</div>
+    <div class="detail-price">${formatSEK(a.price)}${a.quantity>1?' /st':''}</div>
+    <div class="detail-meta">📁 ${esc(a.categories?.name||'')}${a.brand?' · '+esc(a.brand):''}${a.model?' · '+esc(a.model):''}${a.size?' · Strl: '+esc(a.size):''}</div>
+    <div class="detail-meta">📍 ${esc(a.city||'')} · 🕐 ${timeAgo(a.created_at)} · 👁️ ${a.view_count||0} visningar</div>
+    ${a.is_pro_stock&&a.pro_stock_info?`<div class="detail-meta">🏷️ ${esc(a.pro_stock_info)}</div>`:''}
+    ${a.is_pro_stock&&a.pro_stock_player?`<div class="detail-meta">👤 ${esc(a.pro_stock_player)} ${a.pro_stock_team?'· '+esc(a.pro_stock_team):''} ${a.pro_stock_season?'· '+esc(a.pro_stock_season):''}</div>`:''}
+    ${a.description?`<div class="detail-desc">${esc(a.description)}</div>`:''}
+    <div class="detail-grid">
+      <div class="detail-item"><span class="detail-label">Frakt</span><span class="detail-value">${(a.shipping_options||['pickup']).map(s=>({pickup:'Hämtas',postnord:'PostNord',instabox:'Instabox',bussgods:'Bussgods',dhl:'DHL'}[s]||s)).join(', ')}</span></div>
+      <div class="detail-item"><span class="detail-label">Betalning</span><span class="detail-value">${(a.payment_options||['swish']).map(p=>({swish:'Swish',cash:'Kontant',bankgiro:'Bank'}[p]||p)).join(', ')}</span></div>
+      <div class="detail-item"><span class="detail-label">Säljare</span><span class="detail-value">${org?esc(org.name):esc(seller?.display_name||'')} ${seller?.rating_avg>0?'⭐ '+Number(seller.rating_avg).toFixed(1)+' ('+seller.rating_count+')':''}</span></div>
+      <div class="detail-item"><span class="detail-label">Säljartyp</span><span class="detail-value">${org?'Förening':'Privatperson'}</span></div>
+    </div>
+    <div class="prov-box"><div style="font-weight:600;margin-bottom:6px;font-size:11px">Prisuppdelning (5% provision)</div>
+      <div class="prov-row"><span>Pris</span><span>${formatSEK(a.price)}</span></div>
+      <div class="prov-row"><span>PuckMarket (5%)</span><span class="prov-fee">-${formatSEK(f.fee)}</span></div>
+      <div class="prov-row total"><span>Säljaren får</span><span class="prov-net">${formatSEK(f.net)}</span></div>
+    </div>
+    <div class="detail-actions">
+      ${U&&U.id!==a.seller_id?`
+        <button class="btn btn-dark" onclick="openBuyModal()">🛒 Köp ${formatSEK(a.price)}</button>
+        <button class="btn btn-blue" onclick="openMsgModal()">💬 Skicka meddelande</button>
+        <button class="btn ${isFav?'btn-gold':'btn-outline'}" onclick="toggleFav('${a.id}')">${isFav?'❤️ Sparad':'🤍 Spara'}</button>
+      `:`<button class="btn btn-outline" onclick="reqAuth(()=>openBuyModal())">🛒 Logga in för att köpa</button>`}
+      <button class="btn btn-ghost btn-sm" onclick="openReportModal('listing','${a.id}')">🚩 Rapportera</button>
+    </div>
+    ${reviews.length?`<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"><div style="font-weight:600;font-size:13px;margin-bottom:8px">Omdömen om säljaren</div>${reviews.map(r=>`<div style="background:var(--ice);padding:8px;border-radius:8px;margin-bottom:4px;font-size:11px"><strong>${'⭐'.repeat(r.rating)}</strong> ${esc(r.comment||'')} <span style="color:var(--muted);font-size:9px">— ${timeAgo(r.created_at)}</span></div>`).join('')}</div>`:''}
+  </div>`;
+  prevP=document.querySelector('.page.active')?.id?.replace('page-','')||'browse';
+  go('detail');
+}
+
+async function checkFav(listingId){
+  if(!U)return false;
+  const{data}=await db.from('favorites').select('id').eq('user_id',U.id).eq('listing_id',listingId).single();
+  return!!data;
+}
+async function toggleFav(listingId){
+  if(!U)return openM('login');
+  const exists=await checkFav(listingId);
+  if(exists){
+    await db.from('favorites').delete().eq('user_id',U.id).eq('listing_id',listingId);
+    toast('Borttagen från favoriter');
+  }else{
+    await db.from('favorites').insert({user_id:U.id,listing_id:listingId});
+    toast('Sparad!');
+  }
+  showAd(listingId);
+}
+async function getReviews(userId){
+  if(!userId)return[];
+  try{const{data}=await db.from('reviews').select('*').eq('reviewed_id',userId).order('created_at',{ascending:false}).limit(5);return data||[]}catch(e){return[]}
+}
+function goBack(){go(prevP||'browse')}
+
+// ── CREATE ADS ──
+async function uploadImg(fileInput){
+  const file=fileInput?.files?.[0];if(!file)return null;
+  const name=Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9.]/g,'_');
+  const{error}=await db.storage.from('listings').upload(name,file);
+  if(error)throw error;
+  return db.storage.from('listings').getPublicUrl(name).data.publicUrl;
+}
+
+async function doCreateAd(){
+  if(!U)return toast('Logga in','err');
+  const title=gv('f-title'),price=parseFloat(gv('f-price')),city=gv('f-city'),catId=gv('f-cat');
+  if(!title||!price||!catId)return toast('Fyll i rubrik, pris och kategori','err');
+  try{
+    const imgUrl=await uploadImg($('f-img'));
+    const{data:listing,error}=await db.from('listings').insert({
+      seller_id:U.id,title,description:gv('f-desc'),category_id:catId,
+      price,condition:gv('f-cond'),city,brand:gv('f-brand'),size:gv('f-size'),
+      shipping_options:[gv('f-ship')],payment_options:[gv('f-pay')],
+      seller_type:'private',status:'active',published_at:new Date().toISOString()
+    }).select().single();
+    if(error)throw error;
+    if(imgUrl&&listing){
+      await db.from('listing_images').insert({listing_id:listing.id,url:imgUrl,is_primary:true});
+    }
+    toast('Annons skapad!');closeM('new-ad');ldAds();go('myads');ldMyAds();
+  }catch(e){toast(e.message,'err')}
+}
+
+async function doCreateClubAd(){
+  if(!U||!UC)return toast('Registrera förening först','err');
+  const title=gv('fc-title'),price=parseFloat(gv('fc-price')),qty=parseInt(gv('fc-qty'))||1,catId=gv('fc-cat');
+  if(!title||!price||!catId)return toast('Fyll i rubrik, pris och kategori','err');
+  const isPro=$('fc-pro')?.checked;
+  try{
+    const imgUrl=await uploadImg($('fc-img'));
+    const{data:listing,error}=await db.from('listings').insert({
+      seller_id:U.id,org_id:UC.id,title,description:gv('fc-desc'),category_id:catId,
+      price,condition:gv('fc-cond'),city:UC.city,brand:gv('fc-brand'),size:gv('fc-size'),
+      quantity:qty,is_pro_stock:isPro,pro_stock_info:isPro?gv('fc-proinfo'):null,
+      seller_type:'organization',status:'active',published_at:new Date().toISOString()
+    }).select().single();
+    if(error)throw error;
+    if(imgUrl&&listing){
+      await db.from('listing_images').insert({listing_id:listing.id,url:imgUrl,is_primary:true});
+    }
+    toast('Klubb-annons skapad!');closeM('new-club-ad');ldAds();ldDashboard();
+  }catch(e){toast(e.message,'err')}
+}
+
+function showProvision(){
+  const p=parseFloat(gv('f-price'))||0;
+  if(p<=0){$('prov-preview').innerHTML='';return}
+  const f=calcFee(p);
+  $('prov-preview').innerHTML=`<div class="prov-box"><div class="prov-row"><span>Pris</span><span>${formatSEK(f.sub)}</span></div><div class="prov-row"><span>Provision (5%)</span><span class="prov-fee">-${formatSEK(f.fee)}</span></div><div class="prov-row total"><span>Du får</span><span class="prov-net">${formatSEK(f.net)}</span></div></div>`;
+}
+
+// ── CLUBS ──
+async function ldClubs(){
+  try{const{data}=await db.from('organizations').select('*').eq('status','approved').order('name');clubs=data||[]}catch(e){clubs=[]}
+}
+function renderClubs(){
+  const c=$('clubs-c');if(!c)return;
+  if(!clubs.length){c.innerHTML='<div class="empty"><div class="empty-i">🏟️</div><div class="empty-t">Inga föreningar ännu</div></div>';return}
+  c.innerHTML='<div class="clubs-grid">'+clubs.map(cl=>`<div class="club-card" onclick="showClub('${cl.id}')"><div class="club-av">${cl.name.substring(0,2).toUpperCase()}</div><div class="club-info"><div class="club-nm">${esc(cl.name)} ${cl.is_verified?'✅':''}</div><div class="club-loc">📍 ${esc(cl.city)} · ${cl.total_listings||0} annonser</div></div></div>`).join('')+'</div>';
+}
+async function showClub(id){
+  const club=clubs.find(c=>c.id===id);if(!club)return;
+  const clubAds=ads.filter(a=>a.org_id===id);
+  const f=calcFee(club.total_revenue||0);
+  $('clubp-c').innerHTML=`
+    <div style="background:var(--rink);border-radius:var(--r3);padding:24px;color:#fff;margin-bottom:20px;display:flex;gap:16px;align-items:center">
+      <div class="club-av" style="width:56px;height:56px;font-size:22px">${club.name.substring(0,2).toUpperCase()}</div>
+      <div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px">${esc(club.name)} ${club.is_verified?'✅':''}</div>
+      <div style="font-size:12px;opacity:.6">📍 ${esc(club.city)} · ${clubAds.length} annonser · ${club.total_sales||0} sålda</div>
+      ${club.description?`<div style="font-size:12px;opacity:.7;margin-top:4px">${esc(club.description)}</div>`:''}</div>
+    </div>
+    ${clubAds.length?'<div class="ads-grid">'+clubAds.map(renderAdCard).join('')+'</div>':'<div class="empty"><div class="empty-i">📦</div><div class="empty-t">Inga annonser</div></div>'}`;
+  go('club-profile');
+}
+
+async function doRegClub(){
+  if(!U)return toast('Logga in','err');
+  const name=gv('rc-name'),city=gv('rc-city');
+  if(!name||!city)return toast('Fyll i namn och ort','err');
+  try{
+    const slug=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-');
+    const{error}=await db.from('organizations').insert({
+      owner_id:U.id,name,slug,city,contact_person:gv('rc-contact'),
+      email:U.email,description:gv('rc-desc'),org_number:gv('rc-org'),status:'approved'
+    });
+    if(error)throw error;
+    await db.from('profiles').update({seller_type:'organization',role:'org_admin'}).eq('id',U.id);
+    toast('Förening registrerad!');closeM('reg-club');await chkAuth();go('dashboard');ldDashboard();ldClubs();
+  }catch(e){toast(e.message,'err')}
+}
+
+// ── MY ADS ──
+async function ldMyAds(){
+  if(!U)return;
+  const c=$('myads-c');
+  try{
+    const{data}=await db.from('listings').select('*,categories(name,icon)').eq('seller_id',U.id).order('created_at',{ascending:false});
+    if(!data?.length){c.innerHTML='<div class="empty"><div class="empty-i">📦</div><div class="empty-t">Inga annonser</div><button class="btn btn-dark" onclick="openM(\'new-ad\')">+ Ny annons</button></div>';return}
+    c.innerHTML=data.map(a=>`<div class="my-item"><div class="my-info"><div class="my-title">${a.categories?.icon||'📦'} ${esc(a.title)} ${a.is_pro_stock?'🏷️':''}${a.quantity>1?' ('+a.quantity+' st)':''}</div><div class="my-meta">${formatSEK(a.price)} · ${esc(a.city||'')} · ${condLabel(a.condition)} · ${a.status} · ${timeAgo(a.created_at)}</div></div><div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm" onclick="showAd('${a.id}')">Visa</button><button class="btn btn-red btn-sm" onclick="delAd('${a.id}')">Ta bort</button></div></div>`).join('');
+  }catch(e){c.innerHTML='<p>Kunde inte ladda</p>'}
+}
+async function delAd(id){
+  if(!confirm('Ta bort?'))return;
+  await db.from('listings').delete().eq('id',id);
+  toast('Borttagen');ldAds();ldMyAds();if(UC)ldDashboard();
+}
+
+// ── FAVORITES ──
+async function ldFavorites(){
+  if(!U)return;
+  const c=$('favs-c');
+  try{
+    const{data}=await db.from('favorites').select('*,listings(*,profiles(display_name),organizations(name),categories(name,icon),listing_images(url,is_primary))').eq('user_id',U.id).order('created_at',{ascending:false});
+    if(!data?.length){c.innerHTML='<div class="empty"><div class="empty-i">❤️</div><div class="empty-t">Inga favoriter</div></div>';return}
+    c.innerHTML='<div class="ads-grid">'+data.map(f=>{const a=f.listings;a.profiles=a.profiles;a.organizations=a.organizations;a.categories=a.categories;a.listing_images=a.listing_images;return renderAdCard(a)}).join('')+'</div>';
+  }catch(e){c.innerHTML='<p>Fel</p>'}
+}
+
+// ── MESSAGES ──
+async function ldMessages(){
+  if(!U)return;
+  const c=$('msg-c');
+  try{
+    const{data}=await db.from('conversations').select('*,listings(title),buyer:profiles!conversations_buyer_id_fkey(display_name),seller:profiles!conversations_seller_id_fkey(display_name)').or(`buyer_id.eq.${U.id},seller_id.eq.${U.id}`).order('last_message_at',{ascending:false});
+    if(!data?.length){c.innerHTML='<div class="empty"><div class="empty-i">💬</div><div class="empty-t">Inga meddelanden</div></div>';return}
+    c.innerHTML='<div class="conv-list">'+data.map(cv=>{
+      const other=cv.buyer_id===U.id?cv.seller:cv.buyer;
+      const unread=cv.buyer_id===U.id?cv.buyer_unread:cv.seller_unread;
+      return`<div class="conv-item" onclick="openConv('${cv.id}')"><div class="conv-av">${(other?.display_name||'?').substring(0,2).toUpperCase()}</div><div class="conv-info"><div class="conv-name">${esc(other?.display_name||'Okänd')}</div><div class="conv-preview">${esc(cv.listings?.title||'')}</div></div><div class="conv-time">${timeAgo(cv.last_message_at)}</div>${unread>0?`<div class="conv-unread">${unread}</div>`:''}</div>`
+    }).join('')+'</div>';
+  }catch(e){c.innerHTML='<p>Fel</p>'}
+}
+
+async function openConv(convId){
+  curConv=convId;
+  const c=$('conv-c');
+  try{
+    const{data:msgs}=await db.from('messages').select('*,profiles(display_name)').eq('conversation_id',convId).order('created_at');
+    // Mark as read
+    const field=U.id===(await db.from('conversations').select('buyer_id').eq('id',convId).single()).data?.buyer_id?'buyer_unread':'seller_unread';
+    await db.from('conversations').update({[field]:0}).eq('id',convId);
+    
+    c.innerHTML=`<div class="msg-thread" id="msg-thread">${(msgs||[]).map(m=>`<div class="msg-bubble ${m.sender_id===U.id?'msg-mine':'msg-theirs'}">${esc(m.content)}<div class="msg-time">${timeAgo(m.created_at)}</div></div>`).join('')}</div>
+    <div class="msg-input-wrap"><input type="text" class="fi" id="reply-text" placeholder="Skriv meddelande..." onkeypress="if(event.key==='Enter')sendReply()"><button class="btn btn-dark" onclick="sendReply()">Skicka</button></div>`;
+    go('conversation');
+    setTimeout(()=>{const t=$('msg-thread');if(t)t.scrollTop=t.scrollHeight},100);
+  }catch(e){c.innerHTML='<p>Fel</p>'}
+}
+
+async function sendReply(){
+  if(!curConv||!U)return;
+  const text=gv('reply-text');if(!text)return;
+  await db.from('messages').insert({conversation_id:curConv,sender_id:U.id,content:text});
+  await db.from('conversations').update({last_message_at:new Date().toISOString()}).eq('id',curConv);
+  $('reply-text').value='';
+  openConv(curConv);
+}
+
+function openMsgModal(){
+  if(!U||!curAd)return openM('login');
+  $('msg-sub').textContent='Till: '+(curAd.organizations?.name||curAd.profiles?.display_name||'säljaren');
+  openM('msg');
+}
+async function doSendMsg(){
+  if(!U||!curAd)return;
+  const text=gv('msg-text');if(!text)return toast('Skriv ett meddelande','err');
+  try{
+    // Find or create conversation
+    let{data:conv}=await db.from('conversations').select('id').eq('listing_id',curAd.id).eq('buyer_id',U.id).eq('seller_id',curAd.seller_id).single();
+    if(!conv){
+      const{data:newConv,error}=await db.from('conversations').insert({listing_id:curAd.id,buyer_id:U.id,seller_id:curAd.seller_id}).select().single();
+      if(error)throw error;conv=newConv;
+    }
+    await db.from('messages').insert({conversation_id:conv.id,sender_id:U.id,content:text});
+    await db.from('conversations').update({last_message_at:new Date().toISOString(),seller_unread:1}).eq('id',conv.id);
+    toast('Meddelande skickat!');closeM('msg');$('msg-text').value='';
+  }catch(e){toast(e.message,'err')}
+}
+
+// ── ORDERS ──
+function openBuyModal(){
+  if(!U||!curAd)return openM('login');
+  const a=curAd;const f=calcFee(a.price);
+  $('buy-sub').textContent=esc(a.title);
+  $('buy-details').innerHTML=`
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px"><div class="h-card-icon">${catIcon(a)}</div><div><div style="font-weight:600;font-size:13px">${esc(a.title)}</div><div style="font-size:11px;color:var(--muted)">${esc(a.brand||'')} · ${esc(a.size||'')}</div></div></div>
+    <div class="fg"><label class="fl">Antal</label><input type="number" class="fi" id="buy-qty" value="1" min="1" max="${a.quantity}" oninput="updateBuyCalc()"></div>
+    <div class="prov-box" id="buy-calc">
+      <div class="prov-row"><span>Pris</span><span>${formatSEK(a.price)}</span></div>
+      <div class="prov-row"><span>PuckMarket (5%)</span><span class="prov-fee">-${formatSEK(f.fee)}</span></div>
+      <div class="prov-row total"><span>Säljaren får</span><span class="prov-net">${formatSEK(f.net)}</span></div>
+    </div>
+    <div class="fg"><label class="fl">Betalningsmetod</label><select class="fi" id="buy-pay"><option value="swish">Swish</option><option value="cash">Kontant</option></select></div>
+    <div class="fg"><label class="fl">Fraktmetod</label><select class="fi" id="buy-ship"><option value="pickup">Hämtas</option><option value="postnord">PostNord</option><option value="instabox">Instabox</option></select></div>`;
+  openM('buy');
+}
+function updateBuyCalc(){
+  if(!curAd)return;
+  const qty=parseInt(gv('buy-qty'))||1;
+  const f=calcFee(curAd.price,qty);
+  $('buy-calc').innerHTML=`<div class="prov-row"><span>${qty} st × ${formatSEK(curAd.price)}</span><span>${formatSEK(f.sub)}</span></div><div class="prov-row"><span>PuckMarket (5%)</span><span class="prov-fee">-${formatSEK(f.fee)}</span></div><div class="prov-row total"><span>Säljaren får</span><span class="prov-net">${formatSEK(f.net)}</span></div>`;
+}
+async function doCreateOrder(){
+  if(!U||!curAd)return;
+  const qty=parseInt(gv('buy-qty'))||1;
+  try{
+    const{error}=await db.from('orders').insert({
+      buyer_id:U.id,seller_id:curAd.seller_id,org_id:curAd.org_id,listing_id:curAd.id,
+      quantity:qty,unit_price:curAd.price,
+      payment_method:gv('buy-pay'),shipping_method:gv('buy-ship'),
+      status:'paid',paid_at:new Date().toISOString()
+    });
+    if(error)throw error;
+    toast('Köp genomfört! 🎉');closeM('buy');ldAds();
+  }catch(e){toast(e.message,'err')}
+}
+
+// ── REPORTS ──
+function openReportModal(type,id){reportTarget={type,id};openM('report')}
+async function doReport(){
+  if(!U)return openM('login');
+  const insert={reporter_id:U.id,reason:gv('rep-reason'),description:gv('rep-desc')};
+  if(reportTarget.type==='listing')insert.listing_id=reportTarget.id;
+  else insert.reported_user_id=reportTarget.id;
+  await db.from('reports').insert(insert);
+  toast('Rapport skickad');closeM('report');
+}
+
+// ── REVIEWS ──
+async function doReview(){
+  if(!U||!curAd)return;
+  await db.from('reviews').insert({reviewer_id:U.id,reviewed_id:curAd.seller_id,listing_id:curAd.id,rating:parseInt(gv('rev-rating')),comment:gv('rev-comment')});
+  toast('Betyg sparat!');closeM('review');showAd(curAd.id);
+}
+
+// ── DASHBOARD ──
+async function ldDashboard(){
+  if(!UC)return;
+  $('d-name').textContent=UC.name.toUpperCase();
+  try{
+    const{data:clubAds}=await db.from('listings').select('*,categories(name,icon)').eq('org_id',UC.id).order('created_at',{ascending:false});
+    const active=(clubAds||[]).filter(a=>a.status==='active');
+    const totalStock=active.reduce((s,a)=>s+(a.quantity||0),0);
+    const totalValue=active.reduce((s,a)=>s+a.price*(a.quantity||1),0);
+    const f=calcFee(UC.total_revenue||0);
+    
+    $('d-stats').innerHTML=`
+      <div class="d-stat"><div class="d-num">${active.length}</div><div class="d-label">Aktiva</div></div>
+      <div class="d-stat"><div class="d-num">${totalStock}</div><div class="d-label">I lager</div></div>
+      <div class="d-stat"><div class="d-num">${UC.total_sales||0}</div><div class="d-label">Sålda</div></div>
+      <div class="d-stat"><div class="d-num">${formatSEK(UC.total_revenue||0)}</div><div class="d-label">Brutto</div></div>
+      <div class="d-stat"><div class="d-num prov-fee">${formatSEK(UC.total_fees||0)}</div><div class="d-label">Provision (5%)</div></div>
+      <div class="d-stat"><div class="d-num prov-net">${formatSEK(UC.net_earnings||0)}</div><div class="d-label">Netto</div></div>`;
+    
+    $('d-ads').innerHTML=active.length?active.map(a=>`<div class="my-item"><div class="my-info"><div class="my-title">${a.categories?.icon||'📦'} ${esc(a.title)} ${a.is_pro_stock?'🏷️':''} ${a.quantity>1?'('+a.quantity+' st)':''}</div><div class="my-meta">${formatSEK(a.price)}/st · ${condLabel(a.condition)} · ${timeAgo(a.created_at)}</div></div><div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm" onclick="showAd('${a.id}')">Visa</button><button class="btn btn-red btn-sm" onclick="delAd('${a.id}')">Ta bort</button></div></div>`).join(''):'<div class="empty"><div class="empty-i">📦</div><div class="empty-t">Inga annonser</div></div>';
+    
+    // Orders
+    const{data:orders}=await db.from('orders').select('*,listings(title)').eq('org_id',UC.id).order('created_at',{ascending:false}).limit(20);
+    $('d-orders').innerHTML=(orders||[]).length?orders.map(o=>`<div class="my-item"><div class="my-info"><div class="my-title">${esc(o.listings?.title||'Order')} × ${o.quantity}</div><div class="my-meta">${o.order_number} · ${o.status} · ${formatSEK(o.total_amount||0)} → Provision: ${formatSEK(o.platform_fee_amount||0)} → Netto: ${formatSEK(o.seller_net_amount||0)}</div></div></div>`).join(''):'<div class="empty"><div class="empty-i">📊</div><div class="empty-t">Inga försäljningar ännu</div></div>';
+  }catch(e){console.error(e)}
+}
+
+// ── BULK / CSV ──
+function handleCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    const lines=text.split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+    if(lines.length<2)return toast('Filen är tom','err');
+    const headers=lines[0];
+    csvData=lines.slice(1).filter(r=>r.length>=3&&r[0]).map(r=>{
+      const obj={};headers.forEach((h,i)=>obj[h.toLowerCase()]=r[i]||'');return obj;
+    });
+    renderCSVPreview();
+    $('csv-actions').classList.remove('hide');
+    $('csv-actions').style.display='flex';
+  };
+  reader.readAsText(file);
+}
+function renderCSVPreview(){
+  if(!csvData?.length)return;
+  const cols=Object.keys(csvData[0]);
+  $('csv-preview-c').innerHTML=`<div class="csv-preview"><p style="font-size:12px;font-weight:600;margin-bottom:8px">${csvData.length} rader hittade</p><table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${csvData.slice(0,10).map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c]||'')}</td>`).join('')}</tr>`).join('')}${csvData.length>10?`<tr><td colspan="${cols.length}" style="text-align:center;color:var(--muted)">... och ${csvData.length-10} till</td></tr>`:''}</tbody></table></div>`;
+}
+async function processCSV(){
+  if(!csvData?.length||!U||!UC)return toast('Ingen data eller förening','err');
+  let ok=0,fail=0;
+  for(const row of csvData){
+    try{
+      const cat=cats.find(c=>c.name.toLowerCase()===row.category?.toLowerCase()||c.slug===row.category?.toLowerCase());
+      if(!cat){fail++;continue}
+      await db.from('listings').insert({
+        seller_id:U.id,org_id:UC.id,title:row.title,description:row.description||'',
+        category_id:cat.id,price:parseFloat(row.price)||0,condition:row.condition||'good',
+        brand:row.brand||'',model:row.model||'',size:row.size||'',city:row.city||UC.city,
+        quantity:parseInt(row.quantity)||1,is_pro_stock:row.is_pro_stock==='true'||row.is_pro_stock==='1',
+        pro_stock_info:row.pro_stock_info||'',seller_type:'organization',status:'active',
+        published_at:new Date().toISOString()
+      });
+      ok++;
+    }catch(e){fail++}
+  }
+  $('csv-result').innerHTML=`<div class="prov-box" style="margin-top:14px"><div class="prov-row"><span>✅ Lyckade</span><span class="prov-net">${ok}</span></div><div class="prov-row"><span>❌ Misslyckade</span><span class="prov-fee">${fail}</span></div></div>`;
+  toast(`${ok} annonser skapade!`);
+  ldAds();ldDashboard();csvData=null;
+}
+function clearCSV(){csvData=null;$('csv-preview-c').innerHTML='';$('csv-actions').classList.add('hide');$('csv-result').innerHTML='';$('csv-file').value=''}
+
+// Drag & drop
+document.addEventListener('DOMContentLoaded',()=>{
+  const drop=$('csv-drop');if(!drop)return;
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});
+  drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));
+  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);$('csv-file').files=dt.files;handleCSV($('csv-file'))}});
+});
+
+// ── ADMIN ──
+async function adminTab(tab,el){
+  document.querySelectorAll('#page-admin .tab').forEach(t=>t.classList.remove('active'));
+  el?.classList.add('active');
+  const c=$('admin-c');
+  if(tab==='overview'){
+    const{data:users}=await db.from('profiles').select('id',{count:'exact'});
+    const{data:orgs}=await db.from('organizations').select('id',{count:'exact'});
+    const{data:orders}=await db.from('orders').select('total_amount,platform_fee_amount,seller_net_amount').in('status',['paid','shipped','delivered']);
+    const totalGMV=(orders||[]).reduce((s,o)=>s+(o.total_amount||0),0);
+    const totalFees=(orders||[]).reduce((s,o)=>s+(o.platform_fee_amount||0),0);
+    c.innerHTML=`<div class="dash-stats">
+      <div class="d-stat"><div class="d-num">${ads.length}</div><div class="d-label">Annonser</div></div>
+      <div class="d-stat"><div class="d-num">${users?.length||0}</div><div class="d-label">Användare</div></div>
+      <div class="d-stat"><div class="d-num">${orgs?.length||0}</div><div class="d-label">Föreningar</div></div>
+      <div class="d-stat"><div class="d-num">${(orders||[]).length}</div><div class="d-label">Ordrar</div></div>
+      <div class="d-stat"><div class="d-num">${formatSEK(totalGMV)}</div><div class="d-label">GMV</div></div>
+      <div class="d-stat"><div class="d-num prov-fee">${formatSEK(totalFees)}</div><div class="d-label">Provision (5%)</div></div>
+    </div>`;
+  }else if(tab==='users'){
+    const{data}=await db.from('profiles').select('*').order('created_at',{ascending:false});
+    c.innerHTML=(data||[]).map(u=>`<div class="my-item"><div class="my-info"><div class="my-title">${esc(u.display_name||u.email)}</div><div class="my-meta">${u.role} · ${esc(u.city||'')} · ${u.total_sales} sälj · ${formatSEK(u.total_earnings||0)} intjänat · ${timeAgo(u.created_at)}</div></div></div>`).join('')||'<p>Inga</p>';
+  }else if(tab==='orgs'){
+    const{data}=await db.from('organizations').select('*').order('created_at',{ascending:false});
+    c.innerHTML=(data||[]).map(o=>`<div class="my-item"><div class="my-info"><div class="my-title">${esc(o.name)} ${o.is_verified?'✅':''} (${o.status})</div><div class="my-meta">${esc(o.city)} · ${o.total_listings} ann · ${o.total_sales} sålda · Brutto: ${formatSEK(o.total_revenue||0)} · Provision: ${formatSEK(o.total_fees||0)} · Netto: ${formatSEK(o.net_earnings||0)}</div></div><button class="btn btn-green btn-sm" onclick="approveOrg('${o.id}')">Godkänn</button></div>`).join('')||'<p>Inga</p>';
+  }else if(tab==='orders'||tab==='revenue'){
+    const{data}=await db.from('orders').select('*,listings(title),buyer:profiles!orders_buyer_id_fkey(display_name),seller:profiles!orders_seller_id_fkey(display_name)').order('created_at',{ascending:false});
+    c.innerHTML=(data||[]).map(o=>`<div class="my-item"><div class="my-info"><div class="my-title">${o.order_number} — ${esc(o.listings?.title||'')}</div><div class="my-meta">${o.status} · Köpare: ${esc(o.buyer?.display_name||'')} · Säljare: ${esc(o.seller?.display_name||'')} · Total: ${formatSEK(o.total_amount||0)} · <span class="prov-fee">Provision: ${formatSEK(o.platform_fee_amount||0)}</span> · <span class="prov-net">Netto: ${formatSEK(o.seller_net_amount||0)}</span></div></div></div>`).join('')||'<p>Inga ordrar</p>';
+  }else if(tab==='reports'){
+    const{data}=await db.from('reports').select('*').order('created_at',{ascending:false});
+    c.innerHTML=(data||[]).map(r=>`<div class="my-item"><div class="my-info"><div class="my-title">🚩 ${esc(r.reason)}</div><div class="my-meta">${r.status} · ${esc(r.description||'')} · ${timeAgo(r.created_at)}</div></div><button class="btn btn-outline btn-sm" onclick="resolveReport('${r.id}')">Åtgärda</button></div>`).join('')||'<p>Inga rapporter</p>';
+  }else if(tab==='listings'){
+    c.innerHTML=`<div class="ads-grid">${ads.slice(0,50).map(renderAdCard).join('')}</div>`;
+  }
+}
+async function approveOrg(id){await db.from('organizations').update({status:'approved',is_verified:true}).eq('id',id);toast('Godkänd!');ldClubs()}
+async function resolveReport(id){await db.from('reports').update({status:'resolved',resolved_at:new Date().toISOString()}).eq('id',id);toast('Åtgärdad')}
+
+// ── PAGES ──
+function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const el=$('page-'+p);if(el)el.classList.add('active');
+  window.scrollTo(0,0);
+  if(p==='browse'){ldAds();ldClubs()}
+  if(p==='myads')ldMyAds();
+  if(p==='favorites')ldFavorites();
+  if(p==='messages')ldMessages();
+  if(p==='clubs-page'){ldClubs().then(()=>renderClubs())}
+  if(p==='dashboard')ldDashboard();
+  if(p==='admin')adminTab('overview',document.querySelector('#page-admin .tab'));
+}
+
+// ── MODALS ──
+function openM(id){const e=$('modal-'+id);if(e){e.classList.add('active');document.body.style.overflow='hidden'}}
+function closeM(id){const e=$('modal-'+id);if(e){e.classList.remove('active');document.body.style.overflow=''}}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o){o.classList.remove('active');document.body.style.overflow=''}}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.active').forEach(o=>o.classList.remove('active'));document.body.style.overflow=''}});
+
+// ── IMAGE PREVIEW ──
+function prevImg(input,previewId){
+  if(input.files?.[0]){const r=new FileReader();r.onload=e=>{$(previewId).innerHTML=`<img src="${e.target.result}">`;input.parentElement.classList.add('has-img')};r.readAsDataURL(input.files[0])}
+}
+
+// ── FADE IN ──
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.1});
+document.querySelectorAll('.fade-in').forEach(e=>obs.observe(e));
+
+// ── INIT ──
+(async()=>{await chkAuth();await ldCats();await ldClubs();await ldAds()})();
+</script>
+</body>
+</html>
